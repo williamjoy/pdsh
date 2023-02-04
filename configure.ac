@@ -139,6 +139,9 @@ AC_EXEC
 AM_CONDITIONAL(WITH_EXEC, test  "$ac_have_exec"   =  "yes")
 
 
+AC_K8SEXEC
+AM_CONDITIONAL(WITH_K8SEXEC, test  "$ac_have_kexec"   =  "yes")
+
 #
 # Test for kerberos
 #

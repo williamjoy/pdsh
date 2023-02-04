@@ -34,7 +34,7 @@ AC_DEFUN([AC_RCMD_RANK_LIST], [
 
 		AC_MSG_CHECKING([rcmd rank list])
 		if test -z "$ac_cv_rcmd_rank_list"; then
-		   ac_cv_rcmd_rank_list='"mrsh", "rsh", "ssh", "krb4", "exec", "xcpu"'
+		   ac_cv_rcmd_rank_list='"mrsh", "rsh", "ssh", "krb4", "exec", "kexec", "xcpu"'
         fi
         AC_MSG_RESULT([$ac_cv_rcmd_rank_list])
 

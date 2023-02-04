@@ -344,7 +344,7 @@ void opt_default(opt_t * opt, char *argv0)
 
     opt->reverse_copy = false;
 
-    if (!strcmp(opt->progname, "pdsh") || !strcmp(opt->progname, "dsh"))
+    if (!strcmp(opt->progname, "pdsh") || !strcmp(opt->progname, "dsh") || !strcmp(opt->progname, "pdkexec")) 
         personality = DSH;
     else if (!strcmp(opt->progname, "pdcp") 
             || !strcmp(opt->progname, "dcp")
@@ -354,7 +354,7 @@ void opt_default(opt_t * opt, char *argv0)
         personality = PCP;
         opt->reverse_copy = true;
     } else
-        errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp/rpdcp\n");
+        errx("%p: program must be named pdsh/dsh/pdkexec/pdcp/dcp/pcp/rpdcp\n");
 
     if (pdsh_options == NULL)
         _init_pdsh_options();

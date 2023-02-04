@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Running libtoolize --automake --copy ... "
-libtoolize --automake --copy 
+glibtoolize --automake --copy
 echo "Running autoreconf --verbose --install -I config"
 autoreconf --verbose --install -I config
 echo "Cleaning up ..."

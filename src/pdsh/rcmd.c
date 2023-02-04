@@ -48,7 +48,7 @@ static char * rcmd_rank[] =
 #if defined(RCMD_RANK_LIST)
     { RCMD_RANK_LIST, NULL };
 #else
-    { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "exec", "xcpu", NULL };
+    { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "exec", "kexec", "xcpu", NULL };
 #endif /* RCMD_RANK_LIST */
 
 struct rcmd_module {

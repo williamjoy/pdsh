@@ -63,6 +63,10 @@ if WITH_EXEC
 EXEC_MODULE = execcmd.la
 endif
 
+if WITH_K8SEXEC
+EXEC_MODULE = kexeccmd.la
+endif
+
 if WITH_GNU_LD
 VERSION_SCRIPT = \
 	version.map
@@ -140,6 +144,8 @@ k4cmd_la_SOURCES =        k4cmd.c
 k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
 execcmd_la_SOURCES =      execcmd.c
 execcmd_la_LDFLAGS =      $(MODULE_FLAGS)
+kexeccmd_la_SOURCES =   kexeccmd.c
+kexeccmd_la_LDFLAGS =   $(MODULE_FLAGS)
 
 machines_la_SOURCES =     machines.c 
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
