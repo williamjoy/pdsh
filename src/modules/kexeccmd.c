@@ -59,44 +59,44 @@
 #include "src/common/xmalloc.h"
 
 #if STATIC_MODULES
-#  define pdsh_module_info execcmd_module_info
-#  define pdsh_module_priority execcmd_module_priority
+#  define pdsh_module_info kexeccmd_module_info
+#  define pdsh_module_priority kexeccmd_module_priority
 #endif    
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
-static int mod_exec_postop(opt_t *opt);
-static int mod_exec_exit (void);
+static int mod_kexec_postop(opt_t *opt);
+static int mod_kexec_exit (void);
 
-static int exec_init(opt_t *);
-static int exec_signal(int, void *arg, int);
-static int execcmd(char *, char *, char *, char *, char *, int, int *, void **); 
-static int exec_destroy (pipecmd_t p);
+static int kexec_init(opt_t *);
+static int kexec_signal(int, void *arg, int);
+static int kexeccmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int kexec_destroy (pipecmd_t p);
 
 /*
  *  Export generic pdsh module operations:
  */
-struct pdsh_module_operations execcmd_module_ops = {
+struct pdsh_module_operations kexeccmd_module_ops = {
     (ModInitF)       NULL,
-    (ModExitF)       mod_exec_exit,
+    (ModExitF)       mod_kexec_exit,
     (ModReadWcollF)  NULL,
-    (ModPostOpF)     mod_exec_postop
+    (ModPostOpF)     mod_kexec_postop
 };
 
 /*
  *  Export rcmd module operations
  */
-struct pdsh_rcmd_operations execcmd_rcmd_ops = {
-    (RcmdInitF)    exec_init,
-    (RcmdSigF)     exec_signal,
-    (RcmdF)        execcmd,
-    (RcmdDestroyF) exec_destroy
+struct pdsh_rcmd_operations kexeccmd_rcmd_ops = {
+    (RcmdInitF)    kexec_init,
+    (RcmdSigF)     kexec_signal,
+    (RcmdF)        kexeccmd,
+    (RcmdDestroyF) kexec_destroy
 };
 
 /* 
  * Export module options
  */
-struct pdsh_module_option execcmd_module_options[] = 
+struct pdsh_module_option kexeccmd_module_options[] = 
  { 
    PDSH_OPT_TABLE_END
  };
@@ -110,13 +110,13 @@ struct pdsh_module pdsh_module_info = {
   "Mark Grondona <mgrondona@llnl.gov>",
   "arbitrary command rcmd connect method",
   DSH,
-  &execcmd_module_ops,
-  &execcmd_rcmd_ops,
-  &execcmd_module_options[0],
+  &kexeccmd_module_ops,
+  &kexeccmd_rcmd_ops,
+  &kexeccmd_module_options[0],
 };
 
 
-static int mod_exec_postop(opt_t *opt)
+static int mod_kexec_postop(opt_t *opt)
 {
     if (strcmp(opt->rcmd_name, "kexec") == 0) {
         if (opt->connect_timeout != CONNECT_TIMEOUT) {
@@ -126,7 +126,7 @@ static int mod_exec_postop(opt_t *opt)
     }
     return 0;
 }
-static int exec_init(opt_t * opt)
+static int kexec_init(opt_t * opt)
 {
     /*
      * Drop privileges if running setuid root
@@ -140,23 +140,23 @@ static int exec_init(opt_t * opt)
      *  Do not resolve hostnames in pdsh when using exec
      */
     if (rcmd_opt_set (RCMD_OPT_RESOLVE_HOSTS, 0) < 0)
-        errx ("%p: execcmd_init: rcmd_opt_set: %m\n");
+        errx ("%p: kexeccmd_init: rcmd_opt_set: %m\n");
 
     return 0;
 }
 
-static int mod_exec_exit (void)
+static int mod_kexec_exit (void)
 {
     return 0;
 }
 
-static int exec_signal(int fd, void *arg, int signum)
+static int kexec_signal(int fd, void *arg, int signum)
 {
     return (pipecmd_signal ((pipecmd_t) arg, signum));
 }
 
 static int
-execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
+kexeccmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p, void **arg)
 {
     pipecmd_t p;
@@ -167,8 +167,10 @@ execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
      *   into args ourselves in this case, instead just pass
      *   to a shell:
      */
-    const int KEXEC_PREFIX = 4; 
-    const char *alt_argv[] = { "kubectl", "exec", ahost, "--", "sh", "-c", cmd, NULL };
+    const int KEXEC_PREFIX = 5;
+    const char *alt_argv[] = { "echo", "kubectl", "exec", ahost, "--", "sh", "-c", cmd, NULL };
+    const char **new_argv;
+    int b_free_argv = 0;
     if (!argv || *argv == NULL)
         argv = alt_argv;
     else {
@@ -176,14 +178,15 @@ execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
         for(const char **s = argv; *s; s++, argv_len++);
 
         //TODO: free memory
-        const char **new_argv = (const char **) Malloc ( (KEXEC_PREFIX + argv_len +1 ) * sizeof (char *));
+        new_argv = (const char **) Malloc ( (KEXEC_PREFIX + argv_len ) * sizeof (char *));
+        b_free_argv = 1;
         memset (new_argv, 0, KEXEC_PREFIX + argv_len+1);
         
 
         for(int i = 0; i < KEXEC_PREFIX; i++) {
             new_argv[i] = Strdup (alt_argv[i]);
         }
-        for(int i =0; i < argv_len; i++) {
+        for(int i =0; i <= argv_len; i++) {
             new_argv[KEXEC_PREFIX+i] = Strdup (argv[i]);
         }
         argv = new_argv;
@@ -197,11 +200,14 @@ execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 
     *arg = p;
 
-    return (pipecmd_stdoutfd (p));
+    int _fd = (pipecmd_stdoutfd (p));
+    if (b_free_argv)
+        Free(new_argv);
+    return _fd;
 }
 
 static int 
-exec_destroy (pipecmd_t p)
+kexec_destroy (pipecmd_t p)
 {
     int status;
 

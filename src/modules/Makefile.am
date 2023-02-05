@@ -63,7 +63,7 @@ if WITH_EXEC
 EXEC_MODULE = execcmd.la
 endif
 
-if WITH_K8SEXEC
+if WITH_KEXEC
 EXEC_MODULE = kexeccmd.la
 endif
 
