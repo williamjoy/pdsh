@@ -167,8 +167,8 @@ kexeccmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
      *   into args ourselves in this case, instead just pass
      *   to a shell:
      */
-    const int KEXEC_PREFIX = 5;
-    const char *alt_argv[] = { "echo", "kubectl", "exec", ahost, "--", "sh", "-c", cmd, NULL };
+    const int KEXEC_PREFIX = 4;
+    const char *alt_argv[] = { "kubectl", "exec", ahost, "--", "sh", "-c", cmd, NULL };
     const char **new_argv;
     int b_free_argv = 0;
     if (!argv || *argv == NULL)
@@ -202,7 +202,7 @@ kexeccmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 
     int _fd = (pipecmd_stdoutfd (p));
     if (b_free_argv)
-        Free(new_argv);
+        Free((void **)new_argv);
     return _fd;
 }
 

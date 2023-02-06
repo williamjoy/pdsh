@@ -64,7 +64,7 @@ EXEC_MODULE = execcmd.la
 endif
 
 if WITH_KEXEC
-EXEC_MODULE = kexeccmd.la
+KEXEC_MODULE = kexeccmd.la
 endif
 
 if WITH_GNU_LD
@@ -97,7 +97,8 @@ pkglib_LTLIBRARIES = \
 	$(TORQUE_MODULE) \
 	$(DSHGROUP_MODULE) \
 	$(NETGROUP_MODULE) \
-	$(EXEC_MODULE)
+	$(EXEC_MODULE) \
+	$(KEXEC_MODULE)
 
 BUILT_SOURCES = \
 	$(VERSION_SCRIPT)
@@ -121,7 +122,8 @@ EXTRA_libmods_la_SOURCES = \
 	dshgroup.c \
 	netgroup.c \
 	xcpucmd.c \
-	execcmd.c 
+	execcmd.c \
+	kexeccmd.c
 
 libmods_la_LDFLAGS = \
 	$(MRSH_LIBS) \
